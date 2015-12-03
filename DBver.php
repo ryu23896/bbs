@@ -8,44 +8,44 @@
         <font size="5"><p><b>テクアカ用練習掲示板</b></p></font>
         <br>
         <form method="POST" action="DBver.php">
-            ユーザー名(必須)<br>
-            <input type="text" name="user"><br><br><br>
+            名前(必須)<br>
+            <input type="text" name="user" required><br><br><br>
             本文（必須）<br>
-            <textarea name="message" rows="8" cols="40"></textarea><br><br>
+            <textarea name="message" rows="8" cols="40" required></textarea><br><br>
             <input type="submit" name="btn1" value="投稿">
         </form>
     </body>
 
     <?php
-    ini_set( 'display_errors', 0 );
+    ini_set('display_errors', 1);
     require_once 'DbManager.php';
 
     //ログイン状態の判別
-    if (isset($_SESSION["user_name"])) {
-        $status = 'login';
+    if (isset($_SESSION["user_id"])) {
+        define('LOGGED', true);
     } else {
-        $status = 'logout';
+        define('LOGGED', false);
     }
 
     //投稿
     if ($_SERVER['REQUEST_METHOD'] == "POST") {
-        if (empty($_POST['user']) or empty($_POST['message'])) {
+        if (!isset($_POST['user']) or ! isset($_POST['message']) or empty($_POST['user']) or empty($_POST['message'])) {
             print '文字を入力してください';
         } else {
-            if (isset($_POST['user']) and isset($_POST['message'])) {
-                $user = $_POST['user'];
-                $message = $_POST['message'];
-                writeData();
-            } else {
-                print '文字を入力してください';
-            }
+            $user = $_POST['user'];
+            $message = $_POST['message'];
+            writeData($user, $message);
         }
     }
     readData();
 
-    
     function readData() {
 
+        if (LOGGED) {
+            $user_id = $_SESSION["user_id"];
+        } else {
+            $user_id = NULL;
+        }
 
         try {
             $db = getDb();
@@ -54,11 +54,11 @@
             while ($row = $stt->fetch(PDO::FETCH_ASSOC)) {
                 print "<p>\n";
                 //削除ボタンを表示するかどうか判断
-                if ($row['post_id'] == NULL) {
+                if ($row['user_id'] == NULL) {
                     $delete_button = NULL;
                 } else {
-                    if ($row['post_id'] == $_SESSION["user_name"]) {
-                        $delete_button = '<a href="http://192.168.33.10/bbs_db/delete.php">【削除】</a>';
+                    if ($row['user_id'] == $user_id) {
+                        $delete_button = '<a href="delete.php">【削除】</a>';
                     } else {
                         $delete_button = NULL;
                     }
@@ -74,25 +74,22 @@
         }
     }
 
-    function writeData() {
-        global $user;
-        global $message;
-        global $status;
+    function writeData($user, $message) {
 
-        if ($status == 'login') {
-            $post_id = $_SESSION["user_name"];
+        if (LOGGED) {
+            $user_id = $_SESSION["user_id"];
         } else {
-            $post_id = NULL;
+            $user_id = NULL;
         }
 
         try {
             $db = getDb();
 
-            $stt = $db->prepare('INSERT INTO bbs_data(user,message,post_id) VALUES (:user, :message, :post_id)');
+            $stt = $db->prepare('INSERT INTO bbs_data(user,message,user_id) VALUES (:user, :message, :user_id)');
 
             $stt->bindValue(':user', $user);
             $stt->bindValue(':message', $message);
-            $stt->bindValue(':post_id', $post_id);
+            $stt->bindValue(':user_id', $user_id);
             $stt->execute();
             $db = NULL;
         } catch (Exception $e) {
