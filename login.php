@@ -1,14 +1,3 @@
-<html>
-    <body>
-    <center><form method ="post" action="login.php">
-            ユーザーID<br>
-            <input type="text" name="user_id" required><br><br>
-            パスワード<br>
-            <input type="password" name="password" required><br><br>
-            <input type="submit" value="ログイン">
-        </form></center>
-</body>
-
 <?php
 session_start();
 require_once 'DbManager.php';
@@ -16,7 +5,7 @@ require_once 'DbManager.php';
 //フォームに文字が入力されているか・ログイン処理
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
     if (empty($_POST['user_id']) or empty($_POST['password'])) {
-        print "ログイン名・パスワードが入力されていません";
+        $display_message = "ログイン名・パスワードが入力されていません";
         session_destroy();
         exit();
     } else {
@@ -29,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             $result = $stt->fetch();
 
             if ($result == false) {
-                print '<center>IDもしくはパスワードが違います<br><br><a href="http://192.168.33.10/bbs_db/login.php">ログイン画面に戻る</a></center>';
+                $display_message = 'IDもしくはパスワードが違います<br><br><a href="http://192.168.33.10/bbs_smarty/login.php">ログイン画面に戻る</a>';
             } else {
                 $_SESSION["user_id"] = $_POST['user_id'];
                 $_SESSION["password"] = $_POST['password'];
@@ -37,11 +26,25 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 exit;
             }
         } else {
-            print "ログイン名・パスワードが入力されていません";
+            $display_message = "ログイン名・パスワードが入力されていません";
             session_destroy();
             exit();
         }
     }
 }
-?>   
-</html>
+//未定義エラーを無くすため
+if (!isset($display_message)){
+    $display_message = NULL;
+}
+
+require_once('/vagrant/smarty/libs/Smarty.class.php');
+
+$smarty = new Smarty();
+
+$smarty->template_dir = '/var/www/html/bbs_smarty/templates';
+$smarty->compile_dir = '/var/www/html/bbs_smarty/templates_c/';
+$smarty->config_dir = '/var/www/html/bbs_smarty/configs/';
+$smarty->cache_dir = '/var/www/html/bbs_smarty/cache/';
+
+$smarty->assign('display_message', $display_message);
+$smarty->display('login.tpl');

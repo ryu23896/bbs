@@ -1,13 +1,10 @@
-<html>
-    <head><title>登録完了ページ</title></head>
-    <body>
 <?php
 require_once 'DbManager.php';
 
 //フォームに文字が入力されているかどうか・他ユーザーと重複していないかチェック
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
     if (empty($_POST['user_id']) or empty($_POST['password'])) {
-        print '<p><center>ユーザーIDとパスワードを入力して下さい。<center></p>';
+        $display_message = 'ユーザーIDとパスワードを入力して下さい。';
     } else {
         if (isset($_POST['user_id']) and isset($_POST['password'])) {
             $db = getDb();
@@ -17,15 +14,15 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             $stt->execute();
             $result = $stt->fetch();
             if ($result == false) {
-                print '<p><center>登録が完了しました！<center></p>';
+                $display_message = '登録が完了しました！';
                 $user_id = $_POST['user_id'];
                 $password = $_POST['password'];
                 register_data($user_id, $password);
             } else {
-                print '<center>ユーザーIDが他のユーザーと重複しているので変更して下さい。</center>';
+                $display_message = 'ユーザーIDが他のユーザーと重複しているので変更して下さい。';
             }
         } else {
-            print '<p><center>ユーザーIDとパスワードを入力して下さい。<center></p>';
+            $display_message = 'ユーザーIDとパスワードを入力して下さい。';
         }
     }
 }
@@ -45,8 +42,15 @@ function register_data($user_id, $password) {
         die("エラーメッセージ:{$e->getMessage()}");
     }
 }
-?>
-    <center><br><a href="http://192.168.33.10/bbs_db/register.php">登録ページヘ戻る</a></center>
-    <center><br><a href="http://192.168.33.10/bbs_db/DBver.php">トップに戻る</a></center>
-</body>
-</html>
+
+require_once('/vagrant/smarty/libs/Smarty.class.php');
+
+$smarty = new Smarty();
+
+$smarty->template_dir = '/var/www/html/bbs_smarty/templates';
+$smarty->compile_dir = '/var/www/html/bbs_smarty/templates_c/';
+$smarty->config_dir = '/var/www/html/bbs_smarty/configs/';
+$smarty->cache_dir = '/var/www/html/bbs_smarty/cache/';
+
+$smarty->assign('display_message', $display_message);
+$smarty->display('done.tpl');
