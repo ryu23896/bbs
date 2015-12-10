@@ -2,24 +2,18 @@
 session_start();
 
 require_once('/vagrant/smarty/libs/Smarty.class.php');
+require_once 'DbManager.php';
+require_once 'SmartyCall.php';
+ini_set('display_errors', 1);
 
 $smarty = new Smarty();
-
-$smarty->template_dir = '/var/www/html/bbs_smarty/templates';
-$smarty->compile_dir = '/var/www/html/bbs_smarty/templates_c/';
-$smarty->config_dir = '/var/www/html/bbs_smarty/configs/';
-$smarty->cache_dir = '/var/www/html/bbs_smarty/cache/';
-
-
-
-ini_set('display_errors', 1);
-require_once 'DbManager.php';
+smarty();
 
 //ログイン状態の判別
 if (isset($_SESSION["user_id"])) {
-    define('LOGGED', true);
+    define('LOGINED', true);
 } else {
-    define('LOGGED', false);
+    define('LOGINED', false);
 }
 
 //投稿
@@ -34,25 +28,11 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 }
 readData();
 $post_data = readData();
-//未定義エラーをなくすためNULLを代入。テンプレにてNULLが入っていればこの変数を出力しないようにした。
-if (!isset($display_message)){
-    $display_message = NULL;
-}
+
 $smarty->assign('display_message', $display_message);
 $smarty->assign('post_data', $post_data);
-
-?>
-</html>
-<?php
-
-function readData() {
-
-    if (LOGGED) {
-        $user_id = $_SESSION["user_id"];
-    } else {
-        $user_id = NULL;
-    }
-    
+$smarty->assign('ipadress', IPADRESS);
+function readData() { 
     try {
         $db = getDb();
         $stt = $db->prepare('select * from bbs_data order by no desc');
@@ -69,7 +49,7 @@ function readData() {
 
 function writeData($user, $message) {
 
-    if (LOGGED) {
+    if (LOGINED) {
         $user_id = $_SESSION["user_id"];
     } else {
         $user_id = NULL;

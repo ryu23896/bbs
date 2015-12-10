@@ -7,9 +7,10 @@
             <input type="password" name="password" required><br><br>
             <input type="submit" value="ログイン">
         </form>
-        {if $display_message !== NULL}
+        {if isset($display_message)}
         {$display_message}
         {/if}
+        <br><a href="{$ipadress}/bbs_smarty/login.php">ログイン画面に戻る</a>
     </center>
 </body>
 </html>

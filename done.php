@@ -1,5 +1,7 @@
 <?php
 require_once 'DbManager.php';
+require_once('/vagrant/smarty/libs/Smarty.class.php');
+require_once 'SmartyCall.php';
 
 //フォームに文字が入力されているかどうか・他ユーザーと重複していないかチェック
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
@@ -14,10 +16,10 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             $stt->execute();
             $result = $stt->fetch();
             if ($result == false) {
-                $display_message = '登録が完了しました！';
                 $user_id = $_POST['user_id'];
                 $password = $_POST['password'];
                 register_data($user_id, $password);
+                $display_message = '登録が完了しました！';
             } else {
                 $display_message = 'ユーザーIDが他のユーザーと重複しているので変更して下さい。';
             }
@@ -43,14 +45,8 @@ function register_data($user_id, $password) {
     }
 }
 
-require_once('/vagrant/smarty/libs/Smarty.class.php');
-
 $smarty = new Smarty();
-
-$smarty->template_dir = '/var/www/html/bbs_smarty/templates';
-$smarty->compile_dir = '/var/www/html/bbs_smarty/templates_c/';
-$smarty->config_dir = '/var/www/html/bbs_smarty/configs/';
-$smarty->cache_dir = '/var/www/html/bbs_smarty/cache/';
-
+smarty();
 $smarty->assign('display_message', $display_message);
+$smarty->assign('ipadress', IPADRESS);
 $smarty->display('done.tpl');

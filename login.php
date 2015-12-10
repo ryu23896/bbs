@@ -1,6 +1,8 @@
 <?php
 session_start();
 require_once 'DbManager.php';
+require_once('/vagrant/smarty/libs/Smarty.class.php');
+require_once'SmartyCall.php';
 
 //フォームに文字が入力されているか・ログイン処理
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
@@ -18,11 +20,11 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             $result = $stt->fetch();
 
             if ($result == false) {
-                $display_message = 'IDもしくはパスワードが違います<br><br><a href="http://192.168.33.10/bbs_smarty/login.php">ログイン画面に戻る</a>';
+                $display_message = 'IDもしくはパスワードが違います。';
             } else {
                 $_SESSION["user_id"] = $_POST['user_id'];
                 $_SESSION["password"] = $_POST['password'];
-                header('Location: http://192.168.33.10/bbs_db/DBver.php');
+                header('Location: http://192.168.33.10/bbs_smarty/DBver.php');
                 exit;
             }
         } else {
@@ -37,14 +39,8 @@ if (!isset($display_message)){
     $display_message = NULL;
 }
 
-require_once('/vagrant/smarty/libs/Smarty.class.php');
-
 $smarty = new Smarty();
-
-$smarty->template_dir = '/var/www/html/bbs_smarty/templates';
-$smarty->compile_dir = '/var/www/html/bbs_smarty/templates_c/';
-$smarty->config_dir = '/var/www/html/bbs_smarty/configs/';
-$smarty->cache_dir = '/var/www/html/bbs_smarty/cache/';
-
+smarty();
 $smarty->assign('display_message', $display_message);
+$smarty->assign('ipadress', IPADRESS);
 $smarty->display('login.tpl');

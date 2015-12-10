@@ -5,8 +5,10 @@
             <input type="text" name="delete_no" required><br><br>
             <input type="submit" value="削除">           
         </form><br>
-        {$display_message}<br><br>
-        <a href="http://192.168.33.10/bbs_smarty/DBver.php">トップページへ戻る</a>
+        {if isset($display_message)}
+            {$display_message}
+        {/if}<br><br>
+        <a href="{$ipadress}/bbs_smarty/DBver.php">トップページへ戻る</a>
     </center>
-    </body>    
+</body>    
 </html>
